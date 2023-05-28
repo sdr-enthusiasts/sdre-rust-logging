@@ -1,12 +1,12 @@
 [package]
-name = "sdr-rust-logging"
+name = "sdre-rust-logging"
 edition = "2021"
 version = "0.1.0"
 authors = ["Fred Clausen"]
 description = "A simple logging library for Rust, with a custom formatter."
-documentation = "https://github.com/sdr-enthusiasts/sdr-rust-logging"
-homepage = "https://github.com/sdr-enthusiasts/sdr-rust-logging"
-repository = "https://github.com/sdr-enthusiasts/sdr-rust-logging"
+documentation = "https://github.com/sdr-enthusiasts/sdre-rust-logging"
+homepage = "https://github.com/sdr-enthusiasts/sdre-rust-logging"
+repository = "https://github.com/sdr-enthusiasts/sdre-rust-logging"
 readme = "README.md"
 license = "MIT"
 rust-version = "1.69.0"

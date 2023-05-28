@@ -274,7 +274,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "sdr-rust-logging"
+name = "sdre-rust-logging"
 version = "0.1.0"
 dependencies = [
  "chrono",
