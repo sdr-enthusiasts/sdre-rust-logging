@@ -1,0 +1,18 @@
+[package]
+name = "sdr-rust-logging"
+edition = "2021"
+version = "0.1.0"
+authors = ["Fred Clausen"]
+description = "A simple logging library for Rust, with a custom formatter."
+documentation = "https://github.com/sdr-enthusiasts/sdr-rust-logging"
+homepage = "https://github.com/sdr-enthusiasts/sdr-rust-logging"
+repository = "https://github.com/sdr-enthusiasts/sdr-rust-logging"
+readme = "README.md"
+license = "MIT"
+rust-version = "1.69.0"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+env_logger = "0.10.0"
+chrono = "0.4.24"
+log = "0.4.17"
