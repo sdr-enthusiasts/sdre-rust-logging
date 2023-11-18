@@ -7,7 +7,7 @@ description = "A simple logging library for Rust, with a custom formatter."
 documentation = "https://github.com/sdr-enthusiasts/sdre-rust-logging"
 homepage = "https://github.com/sdr-enthusiasts/sdre-rust-logging"
 repository = "https://github.com/sdr-enthusiasts/sdre-rust-logging"
-readme = "README.md"
+readme = "README.MD"
 license = "MIT"
 rust-version = "1.69.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

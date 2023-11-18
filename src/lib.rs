@@ -34,6 +34,8 @@ pub trait SetupLogging {
 /// Setup logging. 0 = Info, 1 = Debug, 2 = Trace
 
 impl SetupLogging for u8 {
+    /// Set logging level. 0 = Info, 1 = Debug, 2 = Trace
+    /// to set the logging level, call `set_logging_level` on a u8
     fn set_logging_level(self) -> LevelFilter {
         match self {
             0 => LevelFilter::Info,
