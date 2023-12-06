@@ -34,13 +34,25 @@ pub trait SetupLogging {
 /// Setup logging. 0 = Info, 1 = Debug, 2 = Trace
 
 impl SetupLogging for u8 {
-    /// Set logging level. 0 = Info, 1 = Debug, 2 = Trace
-    /// to set the logging level, call `set_logging_level` on a u8
+    /// Set logging level. The logging levels match up to the
+    /// linux kernel levels. 0-3 are error levels (to line up with rust not having fatal/alert/crtitical), 4 is warning,
+    /// 5 is info, 6 is debug, 7 is trace. If the level is not
+    /// one of these, it defaults to info. <br><br>
+    /// to set the logging level, call `set_logging_level` on a u8<br><br>
+    /// Once set, users will be shown messages at the current level and lower only
+    /// High levels are suppressed. For example, if the level is set to info, users will see
+    /// info, warn, and error messages. They will not see debug or trace messages.
     fn set_logging_level(self) -> LevelFilter {
         match self {
-            0 => LevelFilter::Info,
-            1 => LevelFilter::Debug,
-            2..=u8::MAX => LevelFilter::Trace,
+            0 => LevelFilter::Error,
+            1 => LevelFilter::Error,
+            2 => LevelFilter::Error,
+            3 => LevelFilter::Error,
+            4 => LevelFilter::Warn,
+            5 => LevelFilter::Info,
+            6 => LevelFilter::Debug,
+            7 => LevelFilter::Trace,
+            _ => LevelFilter::Info,
         }
     }
 
@@ -58,26 +70,32 @@ impl SetupLogging for u8 {
         Builder::new()
             .format(|buf, record| {
                 let mut level_style = buf.style();
+                let mut time_style = buf.style();
+                time_style.set_color(Color::Rgb(159, 80, 1)).set_bold(true);
 
-                if record.level() == log::Level::Info {
-                    level_style.set_color(Color::Green).set_bold(true);
-                } else if record.level() == log::Level::Debug {
-                    level_style.set_color(Color::Cyan).set_bold(true);
-                } else if record.level() == log::Level::Trace {
-                    level_style.set_color(Color::Magenta).set_bold(true);
-                } else if record.level() == log::Level::Error {
-                    level_style.set_color(Color::Red).set_bold(true);
-                } else if record.level() == log::Level::Warn {
-                    level_style.set_color(Color::Yellow).set_bold(true);
-                } else {
-                    level_style.set_color(Color::White).set_bold(true);
+                match record.level() {
+                    log::Level::Info => {
+                        level_style.set_color(Color::Green).set_bold(true);
+                    }
+                    log::Level::Debug => {
+                        level_style.set_color(Color::Cyan).set_bold(true);
+                    }
+                    log::Level::Trace => {
+                        level_style.set_color(Color::Magenta).set_bold(true);
+                    }
+                    log::Level::Error => {
+                        level_style.set_color(Color::Red).set_bold(true);
+                    }
+                    log::Level::Warn => {
+                        level_style.set_color(Color::Yellow).set_bold(true);
+                    }
                 }
 
                 writeln!(
                     buf,
                     "[{}][{}]{}",
                     level_style.value(format!("{: <5}", record.level())),
-                    Local::now().format("%Y-%m-%dT%H:%M:%S"),
+                    time_style.value(format!("{}", Local::now().format("%Y-%m-%dT%H:%M:%S"))),
                     record.args()
                 )
             })
