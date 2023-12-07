@@ -27,35 +27,14 @@ use std::io::Write;
 /// Trait to setup logging
 /// To initialize logging, call `enable_logging` on a u8
 pub trait SetupLogging {
-    fn set_logging_level(self) -> LevelFilter;
-    fn enable_logging(&self);
-}
-
-/// Setup logging. 0 = Info, 1 = Debug, 2 = Trace
-
-impl SetupLogging for u8 {
     /// Set logging level. The logging levels match up to the
-    /// linux kernel levels. 0-3 are error levels (to line up with rust not having fatal/alert/crtitical), 4 is warning,
-    /// 5 is info, 6 is debug, 7 is trace. If the level is not
+    /// log crate's levels. If the user does not specify
     /// one of these, it defaults to info. <br><br>
     /// to set the logging level, call `set_logging_level` on a u8<br><br>
     /// Once set, users will be shown messages at the current level and lower only
     /// High levels are suppressed. For example, if the level is set to info, users will see
     /// info, warn, and error messages. They will not see debug or trace messages.
-    fn set_logging_level(self) -> LevelFilter {
-        match self {
-            0 => LevelFilter::Error,
-            1 => LevelFilter::Error,
-            2 => LevelFilter::Error,
-            3 => LevelFilter::Error,
-            4 => LevelFilter::Warn,
-            5 => LevelFilter::Info,
-            6 => LevelFilter::Debug,
-            7 => LevelFilter::Trace,
-            _ => LevelFilter::Info,
-        }
-    }
-
+    fn set_logging_level(self) -> LevelFilter;
     /// Enable logging<br><br>
     /// The output is colored and looks like this:<br>
     /// \[INFO \]\[2021-08-22T15:49:01\]This is an info message<br>
@@ -65,42 +44,100 @@ impl SetupLogging for u8 {
     /// \[WARN \]\[2021-08-22T15:49:01\]This is a warning message<br>
     /// \[OTHER\]\[2021-08-22T15:49:01\]This is a message with a different log level<br><br>
     /// The level field is colored and bold if the terminal supports it.<br>
+    fn enable_logging(&self);
+}
+
+fn set_builder(loglevel: LevelFilter) {
+    Builder::new()
+        .format(|buf, record| {
+            let mut level_style = buf.style();
+            let mut time_style = buf.style();
+            time_style.set_color(Color::Rgb(159, 80, 1)).set_bold(true);
+
+            match record.level() {
+                log::Level::Info => {
+                    level_style.set_color(Color::Green).set_bold(true);
+                }
+                log::Level::Debug => {
+                    level_style.set_color(Color::Cyan).set_bold(true);
+                }
+                log::Level::Trace => {
+                    level_style.set_color(Color::Magenta).set_bold(true);
+                }
+                log::Level::Error => {
+                    level_style.set_color(Color::Red).set_bold(true);
+                }
+                log::Level::Warn => {
+                    level_style.set_color(Color::Yellow).set_bold(true);
+                }
+            }
+
+            writeln!(
+                buf,
+                "[{}][{}]{}",
+                level_style.value(format!("{: <5}", record.level())),
+                time_style.value(format!("{}", Local::now().format("%Y-%m-%dT%H:%M:%S"))),
+                record.args()
+            )
+        })
+        .filter(None, loglevel)
+        .init();
+}
+
+impl SetupLogging for &str {
+    fn set_logging_level(self) -> LevelFilter {
+        match self.to_lowercase().as_str() {
+            "error" => LevelFilter::Error,
+            "warn" => LevelFilter::Warn,
+            "info" => LevelFilter::Info,
+            "debug" => LevelFilter::Debug,
+            "trace" => LevelFilter::Trace,
+            _ => LevelFilter::Info,
+        }
+    }
 
     fn enable_logging(&self) {
-        Builder::new()
-            .format(|buf, record| {
-                let mut level_style = buf.style();
-                let mut time_style = buf.style();
-                time_style.set_color(Color::Rgb(159, 80, 1)).set_bold(true);
+        let loglevel = self.set_logging_level();
+        set_builder(loglevel);
+    }
+}
 
-                match record.level() {
-                    log::Level::Info => {
-                        level_style.set_color(Color::Green).set_bold(true);
-                    }
-                    log::Level::Debug => {
-                        level_style.set_color(Color::Cyan).set_bold(true);
-                    }
-                    log::Level::Trace => {
-                        level_style.set_color(Color::Magenta).set_bold(true);
-                    }
-                    log::Level::Error => {
-                        level_style.set_color(Color::Red).set_bold(true);
-                    }
-                    log::Level::Warn => {
-                        level_style.set_color(Color::Yellow).set_bold(true);
-                    }
-                }
+impl SetupLogging for String {
+    fn set_logging_level(self) -> LevelFilter {
+        match self.to_lowercase().as_str() {
+            "error" => LevelFilter::Error,
+            "warn" => LevelFilter::Warn,
+            "info" => LevelFilter::Info,
+            "debug" => LevelFilter::Debug,
+            "trace" => LevelFilter::Trace,
+            _ => LevelFilter::Info,
+        }
+    }
 
-                writeln!(
-                    buf,
-                    "[{}][{}]{}",
-                    level_style.value(format!("{: <5}", record.level())),
-                    time_style.value(format!("{}", Local::now().format("%Y-%m-%dT%H:%M:%S"))),
-                    record.args()
-                )
-            })
-            .filter(None, self.set_logging_level())
-            .init();
+    fn enable_logging(&self) {
+        // FIXME: this clone seems unnecessary
+        let loglevel = self.clone().set_logging_level();
+        set_builder(loglevel);
+    }
+}
+
+/// Setup logging. 0 = Error, 1 = Warn, 2 = Info, 3 = Debug, 4 = Trace
+
+impl SetupLogging for u8 {
+    fn set_logging_level(self) -> LevelFilter {
+        match self {
+            1 => LevelFilter::Error,
+            2 => LevelFilter::Warn,
+            3 => LevelFilter::Info,
+            4 => LevelFilter::Debug,
+            5 => LevelFilter::Trace,
+            _ => LevelFilter::Info,
+        }
+    }
+
+    fn enable_logging(&self) {
+        let loglevel = self.set_logging_level();
+        set_builder(loglevel);
     }
 }
 
