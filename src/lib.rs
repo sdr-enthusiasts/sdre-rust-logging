@@ -121,7 +121,23 @@ impl SetupLogging for String {
     }
 }
 
-/// Setup logging. 0 = Error, 1 = Warn, 2 = Info, 3 = Debug, 4 = Trace
+impl SetupLogging for usize {
+    fn set_logging_level(self) -> LevelFilter {
+        match self {
+            1 => LevelFilter::Error,
+            2 => LevelFilter::Warn,
+            3 => LevelFilter::Info,
+            4 => LevelFilter::Debug,
+            5 => LevelFilter::Trace,
+            _ => LevelFilter::Info,
+        }
+    }
+
+    fn enable_logging(&self) {
+        let loglevel = self.set_logging_level();
+        set_builder(loglevel);
+    }
+}
 
 impl SetupLogging for u8 {
     fn set_logging_level(self) -> LevelFilter {
