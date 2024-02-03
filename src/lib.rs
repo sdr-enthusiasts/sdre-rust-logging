@@ -18,9 +18,9 @@ extern crate chrono;
 extern crate env_logger;
 extern crate log;
 
+use anstyle::Color;
 use chrono::Local;
-use env_logger::fmt::Color;
-use env_logger::Builder;
+use env_logger::{fmt::style::AnsiColor, Builder};
 use log::LevelFilter;
 use std::io::Write;
 
@@ -48,40 +48,39 @@ pub trait SetupLogging {
 }
 
 fn set_builder(loglevel: LevelFilter) {
-    Builder::new()
+    let _ = Builder::new()
         .format(|buf, record| {
-            let mut level_style = buf.style();
-            let mut time_style = buf.style();
-            time_style.set_color(Color::Rgb(159, 80, 1)).set_bold(true);
+            let time_style = anstyle::Style::new()
+                .fg_color(Some((159, 80, 1).into()))
+                .bold();
 
-            match record.level() {
-                log::Level::Info => {
-                    level_style.set_color(Color::Green).set_bold(true);
-                }
-                log::Level::Debug => {
-                    level_style.set_color(Color::Cyan).set_bold(true);
-                }
-                log::Level::Trace => {
-                    level_style.set_color(Color::Magenta).set_bold(true);
-                }
-                log::Level::Error => {
-                    level_style.set_color(Color::Red).set_bold(true);
-                }
-                log::Level::Warn => {
-                    level_style.set_color(Color::Yellow).set_bold(true);
-                }
-            }
+            let level_style = match record.level() {
+                log::Level::Info => anstyle::Style::new()
+                    .fg_color(Some(Color::from(AnsiColor::Green)))
+                    .bold(),
+                log::Level::Debug => anstyle::Style::new()
+                    .fg_color(Some(Color::from(AnsiColor::Cyan)))
+                    .bold(),
+                log::Level::Trace => anstyle::Style::new()
+                    .fg_color(Some(Color::from(AnsiColor::Magenta)))
+                    .bold(),
+                log::Level::Error => anstyle::Style::new()
+                    .fg_color(Some(Color::from(AnsiColor::Red)))
+                    .bold(),
+                log::Level::Warn => anstyle::Style::new()
+                    .fg_color(Some(Color::from(AnsiColor::Yellow)))
+                    .bold(),
+            };
 
-            writeln!(
-                buf,
-                "[{}][{}]{}",
-                level_style.value(format!("{: <5}", record.level())),
-                time_style.value(format!("{}", Local::now().format("%Y-%m-%dT%H:%M:%S"))),
-                record.args()
-            )
+            let level = format!("{level_style}{: <5}{level_style:#}", record.level());
+            let time = format!(
+                "{time_style}{}{time_style:#}",
+                Local::now().format("%Y-%m-%dT%H:%M:%S")
+            );
+            writeln!(buf, "[{}][{}]{}", level, time, record.args())
         })
         .filter(None, loglevel)
-        .init();
+        .try_init();
 }
 
 impl SetupLogging for &str {
