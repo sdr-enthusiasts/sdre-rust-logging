@@ -15,5 +15,5 @@ rust-version = "1.69.0"
 [dependencies]
 env_logger = "0.11.1"
 chrono = "0.4.33"
-log = "0.4.20"
+log = "0.4.21"
 anstyle = "1.0.6"
