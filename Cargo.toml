@@ -1,7 +1,7 @@
 [package]
 name = "sdre-rust-logging"
 edition = "2021"
-version = "0.3.20"
+version = "0.3.21"
 authors = ["Fred Clausen"]
 description = "A simple logging library for Rust, with a custom formatter."
 documentation = "https://github.com/sdr-enthusiasts/sdre-rust-logging"
